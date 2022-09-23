@@ -1,5 +1,9 @@
+
+
+import 'package:clima_flutter/screens/location_screen.dart';
+import 'package:clima_flutter/services/location_service.dart';
+import 'package:clima_flutter/services/weather_api_service.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({Key? key}) : super(key: key);
@@ -10,26 +14,30 @@ class LoadingScreen extends StatefulWidget {
 
 class _LoadingScreenState extends State<LoadingScreen> {
 
+  void _currentPosition() async {
+    LocationService locationService = LocationService();
+    await locationService.getCurrentLocation();
 
-  void _getCurrentLocation() async {
+    print('${locationService.latitude}, ${locationService.longitude}');
 
-    LocationPermission permission = await Geolocator.checkPermission();
-    if(permission == LocationPermission.denied){
-      Geolocator.requestPermission();
-    } else {
-      Position position = await Geolocator.getCurrentPosition();
-      // 동기 vs 비동기(async)
-      // 동기 - 메모리상에서 하는 작업
-      // 비동기 - IO 에서는 반드시 비동기 작업..
+    WeatherApiService weatherApiService = WeatherApiService();
+    var weatherDataJson = await weatherApiService.getWeatherInfoWithLocation(
+      latitude: locationService.latitude, longitude: locationService.longitude);
 
-      print(position);
-    }
+    print(weatherDataJson);
   }
 
   @override
   void initState() {
     super.initState();
-    _getCurrentLocation();
+    _currentPosition();
+  }
+
+  void _navigateNextPage(BuildContext context) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const LocationScreen())
+    );
   }
 
   @override
@@ -38,7 +46,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
       body: Center(
         child: ElevatedButton(
           child: Text('위치정보 가져오기'),
-          onPressed: () {_getCurrentLocation();},
+          onPressed: () { _navigateNextPage(context); },
         ),
       ),
     );
