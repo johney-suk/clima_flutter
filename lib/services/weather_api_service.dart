@@ -52,5 +52,4 @@ class WeatherApiService {
     var res = await http.get(url);
     return jsonDecode(res.body);
   }
-
 }
