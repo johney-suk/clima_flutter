@@ -1,9 +1,51 @@
-import 'package:clima_flutter/utilities/constants.dart';
+import 'package:clima_flutter/services/weather.dart';
+import 'package:clima_flutter/ui/city_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:clima_flutter/utilities/constants.dart';
 
+class LocationScreen extends StatefulWidget {
 
-class LocationScreen extends StatelessWidget {
-  const LocationScreen({Key? key}) : super(key: key);
+  late var weatherData;
+
+  LocationScreen({Key? key, this.weatherData}) : super(key: key);
+
+  @override
+  State<LocationScreen> createState() => _LocationScreenState();
+}
+
+class _LocationScreenState extends State<LocationScreen> {
+
+  late int temperature;
+  late String cityName;
+  late String weatherIcon;
+  late String weatherMessage;
+
+  void _updateUI() {
+    // 1. 이전화면에서 전달된 데이터를 확보
+    var weather = widget.weatherData;
+    //print('Location Screen: \n$weather');
+    // 2. 전달된 데이터는 JSON 데이터 이다.
+    // 따라서, JSON 을 파싱하여 원하는 데이터를 뽑아낸다.
+    // 온도, 날씨아이콘, 도시명
+    print(weather['name']);
+    print(weather['main']['temp'].toInt());
+    print(weather['weather'][0]['id']);
+
+    setState(() {
+      temperature = weather['main']['temp'].toInt();
+      cityName = weather['name'];
+      weatherIcon =
+          WeatherModel().getWeatherIcon(weather['weather'][0]['id']);
+      weatherMessage = WeatherModel().getMessage(weather['main']['temp'].toInt());
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _updateUI();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +76,11 @@ class LocationScreen extends StatelessWidget {
                     ),
                   ),
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) {
+                        return CityScreen();
+                      }));
+                    },
                     child: Icon(
                       Icons.location_city,
                       size: 50.0,
@@ -47,11 +93,11 @@ class LocationScreen extends StatelessWidget {
                 child: Row(
                   children: <Widget>[
                     Text(
-                      '32°',
+                      '$temperature°',
                       style: kTempTextStyle,
                     ),
                     Text(
-                      '☀️',
+                      weatherIcon,
                       style: kConditionTextStyle,
                     ),
                   ],
@@ -60,7 +106,7 @@ class LocationScreen extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.only(right: 15.0),
                 child: Text(
-                  "It's 🍦 time in San Francisco!",
+                  "$weatherMessage in $cityName!",
                   textAlign: TextAlign.right,
                   style: kMessageTextStyle,
                 ),
