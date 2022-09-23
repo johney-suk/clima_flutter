@@ -35,9 +35,11 @@ class _LoadingScreenState extends State<LoadingScreen> {
 
   }
 
+
   @override
   void initState() {
     super.initState();
+
     //1.날씨 정보 확보
     _getWeatherJsonData();
   }
