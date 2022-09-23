@@ -1,4 +1,5 @@
 import 'package:clima_flutter/services/weather.dart';
+import 'package:clima_flutter/services/weather_api_service.dart';
 import 'package:clima_flutter/ui/city_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:clima_flutter/utilities/constants.dart';
@@ -16,35 +17,30 @@ class LocationScreen extends StatefulWidget {
 class _LocationScreenState extends State<LocationScreen> {
 
   late int temperature;
-  late String cityName;
   late String weatherIcon;
   late String weatherMessage;
 
-  void _updateUI() {
-    // 1. 이전화면에서 전달된 데이터를 확보
-    var weather = widget.weatherData;
+  void _updateUI({required weather}) {
+
     //print('Location Screen: \n$weather');
     // 2. 전달된 데이터는 JSON 데이터 이다.
     // 따라서, JSON 을 파싱하여 원하는 데이터를 뽑아낸다.
     // 온도, 날씨아이콘, 도시명
-    print(weather['name']);
-    print(weather['main']['temp'].toInt());
-    print(weather['weather'][0]['id']);
-
     setState(() {
       temperature = weather['main']['temp'].toInt();
-      cityName = weather['name'];
       weatherIcon =
           WeatherModel().getWeatherIcon(weather['weather'][0]['id']);
-      weatherMessage = WeatherModel().getMessage(weather['main']['temp'].toInt());
+      weatherMessage =
+      "${WeatherModel().getMessage(weather['main']['temp'].toInt())} in ${weather['name']}!";
     });
   }
 
   @override
   void initState() {
     super.initState();
-
-    _updateUI();
+    // 1. 이전화면에서 전달된 데이터를 확보
+    var weatherDataJson = widget.weatherData;
+    _updateUI(weather: weatherDataJson);
   }
 
   @override
@@ -53,13 +49,13 @@ class _LocationScreenState extends State<LocationScreen> {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/location_background.jpg'),
+            image: const AssetImage('assets/images/location_background.jpg'),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
                 Colors.white.withOpacity(0.8), BlendMode.dstATop),
           ),
         ),
-        constraints: BoxConstraints.expand(),
+        constraints: const BoxConstraints.expand(),
         child: SafeArea(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -69,8 +65,14 @@ class _LocationScreenState extends State<LocationScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   TextButton(
-                    onPressed: () {},
-                    child: Icon(
+                    onPressed: () async {
+                      // 1. 현재위치의 좌표를 기반으로 날씨정보 확보
+                      var weatherData =
+                      await WeatherApiService().getWeatherInfoWithCurrentLocation();
+                      // 2. 화면 갱신
+                      _updateUI(weather: weatherData);
+                    },
+                    child: const Icon(
                       Icons.near_me,
                       size: 50.0,
                     ),
@@ -80,9 +82,14 @@ class _LocationScreenState extends State<LocationScreen> {
                       var cityName = await Navigator.push(context, MaterialPageRoute(builder: (context) {
                         return CityScreen();
                       }));
-                      print('from city Screen: $cityName');
+                      if (cityName != null && cityName != '') {
+                        var weatherDataJSON =
+                        await WeatherApiService()
+                            .getWeatherDataWithCityName(cityName: cityName);
+                        _updateUI(weather: weatherDataJSON);
+                      }
                     },
-                    child: Icon(
+                    child: const Icon(
                       Icons.location_city,
                       size: 50.0,
                     ),
@@ -90,7 +97,7 @@ class _LocationScreenState extends State<LocationScreen> {
                 ],
               ),
               Padding(
-                padding: EdgeInsets.only(left: 15.0),
+                padding: const EdgeInsets.only(left: 15.0),
                 child: Row(
                   children: <Widget>[
                     Text(
@@ -105,9 +112,9 @@ class _LocationScreenState extends State<LocationScreen> {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(right: 15.0),
+                padding: const EdgeInsets.only(right: 15.0),
                 child: Text(
-                  "$weatherMessage in $cityName!",
+                  weatherMessage,
                   textAlign: TextAlign.right,
                   style: kMessageTextStyle,
                 ),

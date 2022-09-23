@@ -15,7 +15,6 @@ class LocationService {
       // 동기 vs 비동기(async)
       // 동기 - 메모리상에서 하는 작업
       // 비동기 - IO 에서는 반드시 비동기 작업..
-
       latitude = position.latitude;
       longitude = position.longitude;
     }
