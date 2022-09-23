@@ -4,6 +4,7 @@ import 'package:clima_flutter/screens/location_screen.dart';
 import 'package:clima_flutter/services/location_service.dart';
 import 'package:clima_flutter/services/weather_api_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({Key? key}) : super(key: key);
@@ -27,6 +28,9 @@ class _LoadingScreenState extends State<LoadingScreen> {
       latitude: locationService.latitude, longitude: locationService.longitude);
 
     print(weatherDataJson);
+
+    //3.location 화면으로 이동
+    _navigateNextPage(context);
   }
 
   @override
@@ -34,8 +38,6 @@ class _LoadingScreenState extends State<LoadingScreen> {
     super.initState();
     //1.날씨 정보 확보
     _getWeatherJsonData();
-    //2.location 화면으로 이동
-    _navigateNextPage(context);
   }
 
   void _navigateNextPage(BuildContext context) {
@@ -49,9 +51,8 @@ class _LoadingScreenState extends State<LoadingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: ElevatedButton(
-          child: Text('위치정보 가져오기'),
-          onPressed: () { _navigateNextPage(context); },
+        child: SpinKitSpinningLines(
+          color: Colors.teal,
         ),
       ),
     );
