@@ -53,6 +53,9 @@ class _LoadingScreenState extends State<LoadingScreen> {
       body: Center(
         child: SpinKitSpinningLines(
           color: Colors.purple,
+          size: 100,
+          lineWidth: 3.0,
+          itemCount: 5,
         ),
       ),
     );
